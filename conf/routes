@@ -1,0 +1,5 @@
+# REST Services
+GET /request/:imo/poll          br.com.jityk.shipsimulator.rest.SimulatorService.poll(imo:String)
+GET /request/:imo/:rate         br.com.jityk.shipsimulator.rest.SimulatorService.changeRate(imo:String, rate:Int)
+GET /stop                       br.com.jityk.shipsimulator.rest.SimulatorService.stopSimulation
+POST /configure                 br.com.jityk.shipsimulator.rest.SimulatorService.configure
