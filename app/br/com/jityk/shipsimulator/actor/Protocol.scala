@@ -9,6 +9,7 @@ import scala.concurrent.duration._
   * Created by jferreira on 2/8/16.
   */
 
+case class Register()
 case class StartSimulation(duration:FiniteDuration)
 case class StopSimulation()
 case class Point(latitude:Double, longitude:Double)

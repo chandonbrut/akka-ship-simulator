@@ -16,7 +16,10 @@ class SimulationActor extends Actor {
         context.system.stop(manager)
         context.unwatch(manager)
       }
-      manager = context.actorOf(Props(new ManagerActor(msg)))
+      manager = context.actorOf(Props(new ManagerActor(msg)),"manager")
+    }
+    case msg:Register => {
+      manager forward msg
     }
 
     case msg:OneTimePoll => manager ! msg

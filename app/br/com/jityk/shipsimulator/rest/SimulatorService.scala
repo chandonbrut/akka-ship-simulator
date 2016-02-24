@@ -2,11 +2,12 @@ package br.com.jityk.shipsimulator.rest
 
 import akka.actor.{PoisonPill, Props, ActorSystem}
 import play.api.libs.json.{JsError, Json}
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{WebSocket, Action, Controller}
 import br.com.jityk.shipsimulator.actor._
 import br.com.jityk.shipsimulator.actor.Protocol._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
+import play.api.Play.current
 
 /**
   * Created by jferreira on 2/8/16.
@@ -15,7 +16,7 @@ import scala.util.{Failure, Success}
 object SimulatorService extends Controller {
 
   private val system = ActorSystem("simulator")
-  private val simulation = system.actorOf(Props[SimulationActor])
+  val simulation = system.actorOf(Props[SimulationActor])
 
   def poll(imoNumber:String) = Action {
     simulation ! OneTimePoll(imoNumber)
@@ -43,5 +44,7 @@ object SimulatorService extends Controller {
       )
     }
   }
+
+
 
 }

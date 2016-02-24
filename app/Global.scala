@@ -1,4 +1,7 @@
+import br.com.jityk.shipsimulator.actor.WebSocketActor
 import play.api.{Application, GlobalSettings, Logger}
+import play.api.mvc._
+import play.api.Play.current
 
 object Global extends GlobalSettings {
 
@@ -11,4 +14,5 @@ object Global extends GlobalSettings {
     Logger.info("Application has stopped")
     super.onStop(app)
   }
+
 }

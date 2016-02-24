@@ -13,6 +13,7 @@ import scala.util.{Failure, Success}
   */
 
 class ManagerActor(conf:Configuration) extends Actor {
+  var websockets:Router = Router(BroadcastRoutingLogic())
   var router:Router = Router(BroadcastRoutingLogic())
   val forwarder = context.actorOf(Props[ForwarderActor])
 
@@ -28,9 +29,15 @@ class ManagerActor(conf:Configuration) extends Actor {
       router.route(PoisonPill,self)
       router.removeRoutee(context.actorSelection("*"))
     }
-    case c:Configuration => {}
+    case msg:Register => {
+      println("Registrando cliente WebSocket")
+      websockets = websockets.addRoutee(sender)
+    }
     case m:OneTimePoll => context.actorSelection(m.imoNumber) ! m
-    case r:Report => forwarder ! r
+    case r:Report => {
+      forwarder ! r
+      websockets.route(r,sender)
+    }
     case c:ChangeRate => context.actorSelection(c.imoNumber) ! c
     case t:Tick => router.route(Tick(),sender)
     case msg:Terminated => println("Ship " + sender.path.name + " stopped.")
