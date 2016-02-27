@@ -1,10 +1,12 @@
 # REST Services
-GET /request/:imo/poll          br.com.jityk.shipsimulator.rest.SimulatorService.poll(imo:String)
-GET /request/:imo/:rate         br.com.jityk.shipsimulator.rest.SimulatorService.changeRate(imo:String, rate:Int)
-GET /stop                       br.com.jityk.shipsimulator.rest.SimulatorService.stopSimulation
-GET /map                       controllers.MapController.map
-GET /ws                        controllers.MapController.wsMap
-GET /testws                        controllers.MapController.testWs
-POST /configure                 br.com.jityk.shipsimulator.rest.SimulatorService.configure
+GET /request/:imo/poll          controllers.SimulatorService.poll(imo:String)
+GET /request/:imo/:rate         controllers.SimulatorService.changeRate(imo:String, rate:Int)
+GET /stop                       controllers.SimulatorService.stopSimulation
+GET /map                        controllers.SimulatorService.show
+GET /ws                         controllers.SimulatorService.wsMap
+GET /configure                 controllers.SimulatorService.prepare
+POST /configure                 controllers.SimulatorService.configure
+POST /configure.json            controllers.SimulatorService.configureJSON
+
 
 GET     /assets/*file       controllers.Assets.versioned(path="/public", file: Asset)

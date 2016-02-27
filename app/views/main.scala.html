@@ -20,8 +20,19 @@
     <link href='@routes.Assets.versioned("bootstrap-3.3.6-dist/css/bootstrap-theme.min.css")' rel="stylesheet">
 </head>
 <body>
+<nav id="simulator-navbar" class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+        <div id="toolbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href='@routes.SimulatorService.prepare()'>Preparar Simulacao</a></li>
+                <li><a href='@routes.SimulatorService.show()'>Ver Simulacao</a></li>
+                <li><a href='@routes.SimulatorService.stopSimulation()'>Parar Simulacao</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
 
-    <div id="lrit-main"  class="container-fluid">
+    <div id="simulator-main"  class="container-fluid">
         <div class="main">
             @content
         </div>

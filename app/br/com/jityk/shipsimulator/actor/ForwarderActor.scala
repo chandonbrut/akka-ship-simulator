@@ -25,7 +25,7 @@ class ForwarderActor extends Actor {
       val sendStr = Seq(msg.imoNumber,msg.position.latitude,msg.position.longitude,msg.timestamp).mkString(",")
       httpClient.execute(new HttpGet(simFrontEndBaseUrl + "/report/" + sendStr))
     } else {
-      println("imo=" + msg.imoNumber + " lat=" + msg.position.latitude + " lon=" + msg.position.longitude + " time=" + msg.timestamp)
+//      println("imo=" + msg.imoNumber + " lat=" + msg.position.latitude + " lon=" + msg.position.longitude + " time=" + msg.timestamp)
     }
   }
 

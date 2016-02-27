@@ -11,6 +11,7 @@ import scala.concurrent.duration._
 
 case class Register()
 case class StartSimulation(duration:FiniteDuration)
+case class GetConfig()
 case class StopSimulation()
 case class Point(latitude:Double, longitude:Double)
 case class ChangeRate(imoNumber:String, rate:Int)
