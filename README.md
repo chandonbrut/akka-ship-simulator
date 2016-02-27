@@ -23,8 +23,8 @@ To run it, just run the **<path>/bin/ship-simulator** file.
 
 You can also change where Play listens for connections, using Play's properties:
 
-		<path>/bin/ship-simulator **-Dhttp.port=8080**
-		<path>/bin/ship-simulator **-Dhttp.address=127.0.0.1**
+		<path>/bin/ship-simulator -Dhttp.port=8080
+		<path>/bin/ship-simulator -Dhttp.address=127.0.0.1
 
 
 Simulation Parameters
