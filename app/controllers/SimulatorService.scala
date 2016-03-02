@@ -5,6 +5,8 @@ import akka.pattern.ask
 import akka.util.Timeout
 import br.com.jityk.shipsimulator.actor.Protocol._
 import br.com.jityk.shipsimulator.actor._
+import com.vividsolutions.jts.geom.{LineString, Polygon}
+import com.vividsolutions.jts.io.WKTReader
 import play.api.data.Form
 import play.api.libs.json.{JsError, Json}
 import play.api.mvc.{WebSocket, Action, Controller}
@@ -22,7 +24,7 @@ object SimulatorService extends Controller {
 
   val configForm = Form(
     mapping(
-      "wktArea" -> text.verifying("Area WKT invalida", area => area.matches("""POLYGON \(.+\)""") || area.matches("""LINESTRING \(.+\)""")),
+      "wktArea" -> text.verifying("Area WKT invalida", area => validateArea(area)),
       "imoFirstDigit" -> number(min = 0, max = 9),
       "numberOfShips" -> number(min = 0, max = 10000),
       "tickUnit" -> shortNumber(min =0, max = 4),
@@ -35,6 +37,20 @@ object SimulatorService extends Controller {
 
 
   val simulation = system.actorOf(Props[SimulationActor])
+
+  def validateArea(area:String) : Boolean = {
+    val reader = new WKTReader
+    try {
+      val geometry = reader.read(area)
+      geometry match {
+        case p:Polygon => true
+        case l:LineString => true
+        case _ => false
+      }
+    } catch {
+      case e:Exception => false
+    }
+  }
 
   def getRunningConfig() =  {
     val runningConfig:Future[Configuration] = (simulation ? GetConfig()).mapTo[Configuration]

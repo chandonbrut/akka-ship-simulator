@@ -2,7 +2,7 @@ package br.com.jityk.shipsimulator.actor
 
 import akka.actor._
 import akka.routing.{BroadcastRoutingLogic, Router, ActorRefRoutee}
-import com.vividsolutions.jts.geom.GeometryFactory
+import com.vividsolutions.jts.geom.{LineString, Polygon, GeometryFactory}
 import com.vividsolutions.jts.io.WKTReader
 import com.vividsolutions.jts.shape.random.RandomPointsBuilder
 
@@ -68,10 +68,15 @@ class ManagerActor(conf:Configuration) extends Actor {
 
   def createPath(area:String):String = {
     val myArea = new WKTReader().read(area)
-    myRandomPositionGenerator.setExtent(myArea)
-    val gf = new GeometryFactory()
-    val geo = gf.createLineString(myRandomPositionGenerator.getGeometry.getCoordinates)
-    geo.toText
+    myArea match {
+      case p:Polygon => {
+        myRandomPositionGenerator.setExtent(myArea)
+        val gf = new GeometryFactory()
+        val geo = gf.createLineString(myRandomPositionGenerator.getGeometry.getCoordinates)
+        geo.toText
+      }
+      case l:LineString => myArea.toText
+    }
   }
 
 }

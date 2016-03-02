@@ -57,7 +57,7 @@ class ShipActor(imoNumber:String, restrictedArea:String, speed:Double, manager:A
         }
       }
     } else {
-      angle = Angle.angle(myPath(currentPoint),myPath(currentPoint-1))
+
       if (currentPoint == 0) {
         going = true
         angle = Angle.angle(myPath(currentPoint),myPath(currentPoint+1))
