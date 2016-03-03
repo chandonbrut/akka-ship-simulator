@@ -20,8 +20,6 @@ function loadMap() {
         this.timestamp = timestamp;
     }
 
-
-
     window.map = L.map('map', {
         center: [-22, -43],
         zoom: 6
@@ -50,8 +48,10 @@ function loadMap() {
   }
 
   function testWebSocket() {
-    console.log('Vou me loggar em @wsUri');
-    websocket = new WebSocket("@wsUri");
+    wsUrl = '@wsUri';
+
+    console.log('Vou me loggar em ' + wsUrl);
+    websocket = new WebSocket(wsUrl);
     websocket.onopen = function(evt) { onOpen(evt) };
     websocket.onclose = function(evt) { onClose(evt) };
     websocket.onmessage = function(evt) { onMessage(evt) };

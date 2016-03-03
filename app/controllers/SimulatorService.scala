@@ -27,7 +27,7 @@ object SimulatorService extends Controller {
       "wktArea" -> text.verifying("Area WKT invalida", area => validateArea(area)),
       "imoFirstDigit" -> number(min = 0, max = 9),
       "numberOfShips" -> number(min = 0, max = 10000),
-      "tickUnit" -> shortNumber(min =0, max = 4),
+      "tickUnit" -> shortNumber(min = 0, max = 4),
       "simFrontEndBaseUrl" -> text)(Configuration.apply)(Configuration.unapply)
   )
 
@@ -101,8 +101,13 @@ object SimulatorService extends Controller {
   }
 
   def show = Action { implicit request => {
+
       val url:String = routes.SimulatorService.wsMap().absoluteURL()
-      val uri = url.replace("http://","ws://")
+      val uri = url match {
+        case u:String if u.matches("""http://.+""") => u.replace("http://","ws://")
+        case u:String if u.matches("""https://.+""") =>u.replace("https://","wss://")
+      }
+
       val runningConfig = getRunningConfig()
       Ok(views.html.show(uri, runningConfig.wktArea))
     }

@@ -1,8 +1,13 @@
 package br.com.jityk.shipsimulator.actor
 
 import akka.actor.Actor
-import org.apache.http.client.methods.{HttpGet, HttpPost}
-import org.apache.http.impl.client.HttpClients
+import play.api.Logger
+import play.api.libs.ws.WS
+import play.api.libs.ws.ning.NingWSClient
+
+import scala.util.{Failure, Success}
+import play.api.Play.current
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
   * Created by jferreira on 2/8/16.
@@ -10,6 +15,7 @@ import org.apache.http.impl.client.HttpClients
 class ForwarderActor extends Actor {
   var simFrontEndBaseUrl = ""
   var configured = false
+  implicit val sslClient = NingWSClient()
 
   def receive = {
     case msg:Report => sendToDC(msg)
@@ -20,12 +26,22 @@ class ForwarderActor extends Actor {
   }
 
   private def sendToDC(msg:Report) = {
+    val outStr = "imo=" + msg.imoNumber + " lat=" + msg.position.latitude + " lon=" + msg.position.longitude + " time=" + msg.timestamp
+
     if (configured) {
-      val httpClient = HttpClients.createDefault()
-      val sendStr = Seq(msg.imoNumber,msg.position.latitude,msg.position.longitude,msg.timestamp).mkString(",")
-      httpClient.execute(new HttpGet(simFrontEndBaseUrl + "/report/" + sendStr))
+      val sendStr = simFrontEndBaseUrl + "/report/" + Seq(msg.imoNumber,msg.position.latitude,msg.position.longitude,msg.timestamp).mkString(",")
+
+      WS.url(sendStr).withRequestTimeout(4000).get().onComplete{
+        case Success(value) => {
+          if (value.status == 200) Logger.info(outStr)
+          else Logger.error(outStr)
+        }
+        case Failure(fail) => {
+          Logger.error(outStr)
+        }
+      }
     } else {
-//      println("imo=" + msg.imoNumber + " lat=" + msg.position.latitude + " lon=" + msg.position.longitude + " time=" + msg.timestamp)
+      Logger.info(outStr)
     }
   }
 
