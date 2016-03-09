@@ -27,8 +27,7 @@ function loadMap() {
 
     window.map.ships = new Array();
 
-    L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    {
+    L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 20,
       minZoom: 2
     }).addTo(window.map);
@@ -36,7 +35,6 @@ function loadMap() {
     var simArea = '@simArea';
     var simAreaGeoJSON = Terraformer.WKT.parse(simArea);
     L.geoJson(simAreaGeoJSON).addTo(map);
-
 }
 
   loadMap();
