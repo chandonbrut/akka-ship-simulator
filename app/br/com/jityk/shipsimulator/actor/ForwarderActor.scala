@@ -7,6 +7,8 @@ import play.api.libs.ws.ning.NingWSClient
 
 import scala.util.{Failure, Success}
 import play.api.Play.current
+import play.api.libs.json.Json
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
@@ -26,22 +28,28 @@ class ForwarderActor extends Actor {
   }
 
   private def sendToDC(msg:Report) = {
-    val outStr = "imo=" + msg.imoNumber + " lat=" + msg.position.latitude + " lon=" + msg.position.longitude + " time=" + msg.timestamp
+
+    val jsonObj = Json.obj(
+      "imoNumber" -> msg.imoNumber,
+      "timestamp" -> msg.timestamp,
+      "lat" -> msg.position.latitude,
+      "lon" -> msg.position.longitude
+    )
+
 
     if (configured) {
-      val sendStr = simFrontEndBaseUrl + "/report/" + Seq(msg.imoNumber,msg.position.latitude,msg.position.longitude,msg.timestamp).mkString(",")
-
-      WS.url(sendStr).withRequestTimeout(4000).get().onComplete{
+      val sendStr = simFrontEndBaseUrl
+      WS.url(sendStr).withRequestTimeout(50000).post(jsonObj).onComplete{
         case Success(value) => {
-          if (value.status == 200) Logger.info(outStr)
-          else Logger.error(outStr)
+          if (value.status == 200) Logger.info(msg.toString)
+          else Logger.error(value.statusText + " error")
         }
         case Failure(fail) => {
-          Logger.error(outStr)
+          Logger.error("Erro enviando:" + msg.toString + " " + fail)
         }
       }
     } else {
-      Logger.info(outStr)
+      Logger.info(msg.toString)
     }
   }
 

@@ -26,7 +26,7 @@ object SimulatorService extends Controller {
     mapping(
       "wktArea" -> text.verifying("Area WKT invalida", area => validateArea(area)),
       "imoFirstDigit" -> number(min = 0, max = 9),
-      "numberOfShips" -> number(min = 0, max = 10000),
+      "numberOfShips" -> number(min = 0, max = 50000),
       "tickUnit" -> shortNumber(min = 0, max = 4),
       "simFrontEndBaseUrl" -> text)(Configuration.apply)(Configuration.unapply)
   )
