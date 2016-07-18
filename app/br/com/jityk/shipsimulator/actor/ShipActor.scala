@@ -1,10 +1,12 @@
 package br.com.jityk.shipsimulator.actor
 
-import akka.actor.{ActorRef, Actor}
+import akka.actor.{Actor, ActorRef}
 import com.vividsolutions.jts.algorithm.Angle
 import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, LineString, Polygon}
 import com.vividsolutions.jts.io.WKTReader
 import com.vividsolutions.jts.shape.random.RandomPointsBuilder
+
+import scala.util.Random
 
 /**
   * Created by jferreira on 2/8/16.
@@ -17,8 +19,8 @@ class ShipActor(imoNumber:String, restrictedArea:String, speed:Double, manager:A
   var currentPoint:Int = 0;
   val geometryFactory = new GeometryFactory();
 
-  private var currentRate:Int = 1
-  private var currentTick:Int = 0
+  private var currentRate:Int = 15
+  private var currentTick:Int = Random.nextInt(currentRate)
   private var currentPosition:Point = Point(myArea.getCoordinates()(0).y,myArea.getCoordinates()(0).x)
 
   override def receive = {
@@ -33,6 +35,7 @@ class ShipActor(imoNumber:String, restrictedArea:String, speed:Double, manager:A
   def changeRate(newRate:Int): Unit = {
     require(newRate >= 0)
     currentRate = newRate
+    currentTick = currentTick + Random.nextInt(currentRate)
   }
 
   def THRESHOLD = speed*2/(60d)
