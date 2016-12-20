@@ -32,8 +32,8 @@ class ForwarderActor extends Actor {
     val jsonObj = Json.obj(
       "imoNumber" -> msg.imoNumber,
       "timestamp" -> msg.timestamp,
-      "lat" -> msg.position.latitude,
-      "lon" -> msg.position.longitude
+      "latitude" -> msg.position.latitude,
+      "longitude" -> msg.position.longitude
     )
 
 
