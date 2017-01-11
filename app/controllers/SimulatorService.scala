@@ -2,25 +2,27 @@ package controllers
 
 import akka.actor.{ActorSystem, Props}
 import akka.pattern.ask
+import akka.stream.Materializer
 import akka.util.Timeout
 import br.com.jityk.shipsimulator.actor.Protocol._
 import br.com.jityk.shipsimulator.actor._
+import com.google.inject.Inject
 import com.vividsolutions.jts.geom.{LineString, Polygon}
 import com.vividsolutions.jts.io.WKTReader
 import play.api.data.Form
 import play.api.libs.json.{JsError, Json}
-import play.api.mvc.{WebSocket, Action, Controller}
+import play.api.mvc.{Action, Controller, WebSocket}
 import play.api.data.Forms._
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
-import play.api.Play.current
+import play.api.libs.streams.ActorFlow
 
 /**
   * Created by jferreira on 2/8/16.
   */
 
-object SimulatorService extends Controller {
+class SimulatorService @Inject() (implicit system:ActorSystem, materializer: Materializer) extends Controller {
 
   val configForm = Form(
     mapping(
@@ -30,8 +32,6 @@ object SimulatorService extends Controller {
       "tickUnit" -> shortNumber(min = 0, max = 4),
       "simFrontEndBaseUrl" -> text)(Configuration.apply)(Configuration.unapply)
   )
-
-  private val system = ActorSystem("simulator")
 
   implicit val timeout = Timeout(2 seconds)
 
@@ -113,8 +113,8 @@ object SimulatorService extends Controller {
     }
   }
 
-  def wsMap = WebSocket.acceptWithActor[String, String] { request => out =>
-    WebSocketActor.props(out,simulation)
+  def wsMap = WebSocket.accept[String, String] { request =>
+    ActorFlow.actorRef(out => WebSocketActor.props(out,simulation))
   }
 
 }
