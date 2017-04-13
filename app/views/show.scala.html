@@ -1,49 +1,72 @@
 @(wsUri:String,simArea:String = "LINESTRING (-30 -10, -10 -30, -40 -40)")
 @main("Ships") {
-<link href='@routes.Assets.versioned("leaflet/leaflet.css")' rel="stylesheet">
-<script src='@routes.Assets.versioned("leaflet/leaflet.js")'></script>
-<script src='@routes.Assets.versioned("javascripts/terraformer.min.js")'></script>
-<script src='@routes.Assets.versioned("javascripts/terraformer-wkt-parser.min.js")'></script>
+
+<script src='@routes.Assets.versioned("javascripts/Cesium/Cesium.js")'></script>
+<script src='@routes.Assets.versioned("javascripts/olcesium.js")'></script>
 <div id="map" style="height: 100%; width: 100%;"></div>
+
+<body>
+<div id="map"></div>
 <script>
+var format = new ol.format.WKT();
 
-   function Ship(imo,marker) {
-        this.imo = imo;
-        this.marker = marker;
-    }
+var f1 = format.readFeature('@simArea', {
+         dataProjection: 'EPSG:4326',
+         featureProjection: 'EPSG:4326'
+         });
 
-function loadMap() {
+var areaSource = new ol.source.Vector({
+  features: [f1]
+});
 
-    function Position(lat,lon,timestamp) {
-        this.lat = lat;
-        this.lon = lon;
-        this.timestamp = timestamp;
-    }
+var areaLayer = new ol.layer.Vector({
+  source: areaSource
+});
+/*
+var vectorSource2 = new ol.source.Vector({
+  features: [iconFeature]
+});
+var imageVectorSource = new ol.source.ImageVector({
+  source: vectorSource2
+});
+var vectorLayer2 = new ol.layer.Image({
+  source: imageVectorSource
+});
+*/
 
-    window.map = L.map('map', {
-        center: [-22, -43],
-        zoom: 6
-    });
+var map = new ol.Map({
+  layers: [
+    new ol.layer.Tile({
+      source: new ol.source.OSM()
+    }), areaLayer
+  ],
+  target: 'map',
+  controls: ol.control.defaults({
+    attributionOptions: ({
+      collapsible: false
+    })
+  }),
+  view: new ol.View({
+    center: [0, 0],
+    zoom: 2
+  })
+});
 
-    window.map.ships = new Array();
+var ol3d = new olcs.OLCesium({map: map});
+ol3d.setEnabled(true);
 
-    L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 20,
-      minZoom: 2
-    }).addTo(window.map);
 
-    var simArea = '@simArea';
-    var simAreaGeoJSON = Terraformer.WKT.parse(simArea);
-    L.geoJson(simAreaGeoJSON).addTo(map);
+function Ship(imo,marker) {
+    this.imo = imo;
+    this.marker = marker;
 }
 
-  loadMap();
 
+window.map.ships = new Array();
 
-  function init()
-  {
+function init() {
     testWebSocket();
-  }
+}
 
   function testWebSocket() {
     wsUrl = '@wsUri';
@@ -66,7 +89,14 @@ function loadMap() {
 
   function onMessage(evt) {
     pos = $.parseJSON(evt.data);
-    var ship = new Ship(pos.imoNumber,L.marker([pos.position.latitude,pos.position.longitude]))
+
+    var point = new ol.geom.Point([700000, 200000, 100000]);
+    var iconFeature = new ol.Feature({
+        geometry: point
+    });
+
+
+    var ship = new Ship(pos.imoNumber,iconFeature);
     i = 0;
     var found = false;
     for (i = 0; i<window.map.ships.length; i++) {
