@@ -58,7 +58,7 @@ class ManagerActor(conf:Configuration) extends Actor {
         val imoNumber = (base + n).toString
         val area = createPath(wktArea)
         println("Spawning ship " + imoNumber + " @ " + area)
-        val child = context.actorOf(Props(new ShipActor(imoNumber, area, 5d, self)), imoNumber)
+        val child = context.actorOf(Props(new ShipActor(imoNumber, area, 1d, self)), imoNumber)
         context.watch(child)
         ActorRefRoutee(child)
       }

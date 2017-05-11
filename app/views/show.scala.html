@@ -3,42 +3,77 @@
 
 <script src='@routes.Assets.versioned("javascripts/Cesium/Cesium.js")'></script>
 <script src='@routes.Assets.versioned("javascripts/olcesium.js")'></script>
-<div id="map" style="height: 100%; width: 100%;"></div>
 
 <body>
-<div id="map"></div>
+<div id="map" style="height: 100%; width: 100%;"></div>
 <script>
+
+ var shipStyle = new ol.style.Style({
+        image: new ol.style.Icon(({
+            anchor: [0,0],
+            anchorXUnits: 'pixels',
+            anchorYUnits: 'pixels',
+            opacity: 0.75,
+            src: 'assets/leaflet/images/marker-icon.png'
+        })),
+        text: new ol.style.Text({
+            text: 'Z',
+            offsetY: -25,
+            fill: new ol.style.Fill({ color: '#fff' })
+        })
+    });
+
+var styles = [shipStyle];
+
+
+window.shipSource = new ol.source.Vector();
+
+window.shipImageSource = new ol.source.ImageVector({
+  source: window.shipSource,
+  style: function(feature,resolution) {
+    shipStyle.getText().setText((resolution < 5000 ? feature.imoNumber : ''));
+    return styles;
+  }
+});
+
+
+window.shipLayer = new ol.layer.Image({
+  source: window.shipImageSource,
+  style: function(feature,resolution) {
+    shipStyle.getText().setText(feature.imoNumber);
+    return styles;
+  }
+});
+
 var format = new ol.format.WKT();
 
 var f1 = format.readFeature('@simArea', {
          dataProjection: 'EPSG:4326',
-         featureProjection: 'EPSG:4326'
+         featureProjection: 'EPSG:3857'
          });
 
-var areaSource = new ol.source.Vector({
+var polygonVectorSource = new ol.source.Vector({
   features: [f1]
 });
 
 var areaLayer = new ol.layer.Vector({
-  source: areaSource
+  source: polygonVectorSource,
+  style: new ol.style.Style({
+      fill: new ol.style.Fill({
+        color: 'rgba(255, 69, 0, 0.7)'
+      }),
+      stroke: new ol.style.Stroke({
+        color: 'rgba(255, 69, 0, 0.9)',
+        width: 1
+      })
+  })
 });
-/*
-var vectorSource2 = new ol.source.Vector({
-  features: [iconFeature]
-});
-var imageVectorSource = new ol.source.ImageVector({
-  source: vectorSource2
-});
-var vectorLayer2 = new ol.layer.Image({
-  source: imageVectorSource
-});
-*/
 
 var map = new ol.Map({
   layers: [
     new ol.layer.Tile({
       source: new ol.source.OSM()
-    }), areaLayer
+    })
   ],
   target: 'map',
   controls: ol.control.defaults({
@@ -48,19 +83,32 @@ var map = new ol.Map({
   }),
   view: new ol.View({
     center: [0, 0],
+    center: [0, 0],
     zoom: 2
   })
 });
 
-var ol3d = new olcs.OLCesium({map: map});
-ol3d.setEnabled(true);
+window.map = map;
+window.map.ships = {};
 
+map.addLayer(window.shipLayer); map.addLayer(areaLayer);
+
+/*
+    var ol3d = new olcs.OLCesium({map: map});
+    var scene = ol3d.getCesiumScene();
+    var terrainProvider = new Cesium.CesiumTerrainProvider({
+      url : 'http://assets.agi.com/stk-terrain/world'
+    });
+    scene.terrainProvider = terrainProvider;
+    ol3d.setEnabled(true);
+*/
 
 function Ship(imo,marker) {
     this.imo = imo;
     this.marker = marker;
 }
 
+console.log('Loaded map!');
 
 window.map.ships = new Array();
 
@@ -90,26 +138,26 @@ function init() {
   function onMessage(evt) {
     pos = $.parseJSON(evt.data);
 
-    var point = new ol.geom.Point([700000, 200000, 100000]);
-    var iconFeature = new ol.Feature({
-        geometry: point
-    });
+    if (window.map.ships[pos.imoNumber] === undefined) {
+        var iconFeature = new ol.Feature({
+            geometry: new ol.geom.Point(ol.proj.transform([pos.position.longitude,pos.position.latitude], 'EPSG:4326','EPSG:3857'))
+        });
 
+        iconFeature.imoNumber = pos.imoNumber;
+        var ship = new Ship(pos.imoNumber,iconFeature);
+        window.shipSource.addFeatures([iconFeature]);
+        window.map.ships[pos.imoNumber] = ship;
+    } else {
+        window.map.ships[pos.imoNumber].marker.getGeometry().setCoordinates(ol.proj.transform([pos.position.longitude,pos.position.latitude], 'EPSG:4326','EPSG:3857'));
 
-    var ship = new Ship(pos.imoNumber,iconFeature);
-    i = 0;
-    var found = false;
-    for (i = 0; i<window.map.ships.length; i++) {
-        if (window.map.ships[i].imo === ship.imo) {
-            window.map.ships[i].marker.setLatLng(ship.marker.getLatLng());
-            found = true;
-        }
-    }
-    if (!found) {
+            /*
         ship.marker.addTo(map);
         ship.marker.bindPopup('<b>' + pos.imoNumber + '</b>');
-        window.map.ships.push(ship);
+        */
     }
+
+
+
   }
 
   function onError(evt){ }
