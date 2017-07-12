@@ -1,24 +1,23 @@
 package br.com.jityk.shipsimulator.actor
 
 import akka.actor.Actor
-import akka.stream.{ActorMaterializer, Materializer}
-import com.google.inject.Inject
+import akka.stream.ActorMaterializer
 import play.api.Logger
-
-import scala.util.{Failure, Success}
-import scala.concurrent.duration._
 import play.api.libs.json.Json
-import play.api.libs.ws.WSClient
-import play.api.libs.ws.ahc.AhcWSClient
+import play.api.libs.ws.ahc.StandaloneAhcWSClient
+
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
+import scala.util.{Failure, Success}
 
 /**
   * Created by jferreira on 2/8/16.
   */
 class ForwarderActor extends Actor {
   implicit val materializer = ActorMaterializer()
-  val wsClient = AhcWSClient()
+
+  val wsClient = StandaloneAhcWSClient()
 
   var simFrontEndBaseUrl = ""
   var configured = false

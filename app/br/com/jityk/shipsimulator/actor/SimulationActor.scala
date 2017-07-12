@@ -1,11 +1,11 @@
 package br.com.jityk.shipsimulator.actor
 
-import akka.actor.{PoisonPill, Props, ActorRef, Actor}
+import akka.actor.{Actor, ActorRef, PoisonPill, Props}
 
 /**
   * Created by jferreira on 2/9/16.
   */
-class SimulationActor extends Actor {
+class SimulationActor  extends Actor {
 
   private var manager:ActorRef = null
   private var config:Configuration = Configuration(null,-1,-1,-1,null)

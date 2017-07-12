@@ -1,11 +1,25 @@
 # REST Services
++nocsrf
 GET /request/:imo/poll          controllers.SimulatorService.poll(imo:String)
+
++nocsrf
 GET /request/:imo/:rate         controllers.SimulatorService.changeRate(imo:String, rate:Int)
+
++nocsrf
 GET /stop                       controllers.SimulatorService.stopSimulation
+
++nocsrf
 GET /map                        controllers.SimulatorService.show
+
++nocsrf
 GET /ws                         controllers.SimulatorService.wsMap
++nocsrf
 GET /configure                 controllers.SimulatorService.prepare
+
++nocsrf
 POST /configure                 controllers.SimulatorService.configure
+
++nocsrf
 POST /configure.json            controllers.SimulatorService.configureJSON
 
 

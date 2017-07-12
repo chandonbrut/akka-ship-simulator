@@ -1,24 +1,24 @@
 package br.com.jityk.shipsimulator.actor
 
+
 import akka.actor._
-import akka.routing.{BroadcastRoutingLogic, Router, ActorRefRoutee}
-import com.vividsolutions.jts.geom.{LineString, Polygon, GeometryFactory}
+import akka.routing.{ActorRefRoutee, BroadcastRoutingLogic, Router}
+import com.vividsolutions.jts.geom.{GeometryFactory, LineString, Polygon}
 import com.vividsolutions.jts.io.WKTReader
 import com.vividsolutions.jts.shape.random.RandomPointsBuilder
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
-import scala.util.{Failure, Success}
+
 
 
 /**
   * Created by jferreira on 2/8/16.
   */
 
-class ManagerActor(conf:Configuration) extends Actor {
+class ManagerActor(conf:Configuration)extends Actor {
   var websockets:Router = Router(BroadcastRoutingLogic())
   var router:Router = Router(BroadcastRoutingLogic())
-  val forwarder = context.actorOf(Props[ForwarderActor])
+  val forwarder = context.actorOf(Props(new ForwarderActor()))
   val myRandomPositionGenerator = new RandomPointsBuilder()
 
 

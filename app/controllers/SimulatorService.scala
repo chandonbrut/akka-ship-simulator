@@ -1,28 +1,29 @@
 package controllers
 
+import javax.inject.Inject
+
 import akka.actor.{ActorSystem, Props}
 import akka.pattern.ask
 import akka.stream.Materializer
 import akka.util.Timeout
 import br.com.jityk.shipsimulator.actor.Protocol._
 import br.com.jityk.shipsimulator.actor._
-import com.google.inject.Inject
 import com.vividsolutions.jts.geom.{LineString, Polygon}
 import com.vividsolutions.jts.io.WKTReader
 import play.api.data.Form
 import play.api.libs.json.{JsError, Json}
-import play.api.mvc.{Action, Controller, WebSocket}
+import play.api.mvc._
 import play.api.data.Forms._
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import play.api.libs.streams.ActorFlow
-
+import play.libs.ws.WSClient
 /**
   * Created by jferreira on 2/8/16.
   */
 
-class SimulatorService @Inject() (implicit system:ActorSystem, materializer: Materializer) extends Controller {
+class SimulatorService @Inject() (implicit system:ActorSystem, materializer: Materializer, val controllerComponents: ControllerComponents) extends BaseController {
 
   val configForm = Form(
     mapping(
@@ -36,7 +37,7 @@ class SimulatorService @Inject() (implicit system:ActorSystem, materializer: Mat
   implicit val timeout = Timeout(2 seconds)
 
 
-  val simulation = system.actorOf(Props[SimulationActor])
+  val simulation = system.actorOf(Props(new SimulationActor()))
 
   def validateArea(area:String) : Boolean = {
     val reader = new WKTReader
