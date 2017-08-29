@@ -102,12 +102,9 @@ class SimulatorService @Inject() (implicit system:ActorSystem, materializer: Mat
   }
 
   def show = Action { implicit request => {
-
       val url:String = routes.SimulatorService.wsMap().absoluteURL()
-      val uri = url match {
-        case u:String if u.matches("""http://.+""") => u.replace("http://","ws://")
-        case u:String if u.matches("""https://.+""") =>u.replace("https://","wss://")
-      }
+      val uri = if (request.secure) url.replace("https://","wss://")
+                else url.replace("http://","ws://")
 
       val runningConfig = getRunningConfig()
       Ok(views.html.show(uri, runningConfig.wktArea))
