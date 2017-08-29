@@ -23,8 +23,6 @@ class WebSocketActor(out:ActorRef, sim:ActorRef) extends Actor {
 
   def receive = {
     case "register" => {
-      println(sim)
-      println("Vou me registrar no manager...")
       sim ! Register()
     }
     case msg:Report => out ! Json.toJson(msg).toString()

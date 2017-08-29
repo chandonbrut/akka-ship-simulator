@@ -6,6 +6,9 @@ scalaVersion := "2.12.2"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
+herokuAppName in Compile := "zx-ventures-backend-challenge"
+
+
 libraryDependencies ++= Seq(
 	"com.vividsolutions" % "jts" % "1.13",
   "com.typesafe.play" %% "play-ws" % "2.6.1",

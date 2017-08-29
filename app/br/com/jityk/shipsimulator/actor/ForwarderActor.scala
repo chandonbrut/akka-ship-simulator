@@ -25,14 +25,14 @@ class ForwarderActor extends Actor {
   def receive = {
     case msg:Report => sendToDC(msg)
     case msg:Configuration => {
-      simFrontEndBaseUrl = msg.simFrontEndBaseUrl
-      configured = true
+      /*
+        simFrontEndBaseUrl = msg.simFrontEndBaseUrl
+        configured = !((simFrontEndBaseUrl == null || simFrontEndBaseUrl.isEmpty))
+        */
     }
   }
 
   private def sendToDC(msg:Report) = {
-
-
 
     val jsonObj = Json.obj(
       "imoNumber" -> msg.imoNumber,
@@ -40,7 +40,6 @@ class ForwarderActor extends Actor {
       "latitude" -> msg.position.latitude,
       "longitude" -> msg.position.longitude
     )
-
 
     if (configured) {
       val sendStr = simFrontEndBaseUrl
