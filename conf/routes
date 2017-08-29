@@ -22,5 +22,6 @@ POST /configure                 controllers.SimulatorService.configure
 +nocsrf
 POST /configure.json            controllers.SimulatorService.configureJSON
 
+GET  /                      controllers.SimulatorService.show
 
 GET     /assets/*file       controllers.Assets.versioned(path="/public", file: Asset)
