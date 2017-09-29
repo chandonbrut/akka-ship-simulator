@@ -1,170 +1,42 @@
 @(wsUri:String,simArea:String = "LINESTRING (-30 -10, -10 -30, -40 -40)")
 @main("Ships") {
 
-<script src='@routes.Assets.versioned("javascripts/Cesium/Cesium.js")'></script>
-<script src='@routes.Assets.versioned("javascripts/olcesium.js")'></script>
+<script>
+    window.map = {};
+    window.map.ships = {};
+</script>
+
+<link rel="stylesheet" media="screen" href='@routes.Assets.versioned("openlayers/ol.css")'/>
+<script src='@routes.Assets.versioned("openlayers/ol.js")'></script>
+<script src='@routes.Assets.versioned("javascripts/openlayers-provides.js")'></script>
+
+<!--
+<link href='@routes.Assets.versioned("leaflet/leaflet.css")' rel="stylesheet">
+<script src='@routes.Assets.versioned("leaflet/leaflet.js")'></script>
+<script src='@routes.Assets.versioned("javascripts/leaflet-provides.js")'></script>
+-->
+
+<script src='@routes.Assets.versioned("javascripts/terraformer.min.js")'></script>
+<script src='@routes.Assets.versioned("javascripts/terraformer-wkt-parser.min.js")'></script>
+
+
+<script src='@routes.Assets.versioned("javascripts/websocket-shit.js")'></script>
 
 <body>
-<div id="map" style="height: 100%; width: 100%;"></div>
+<div id="map" style="height: 80%; width: 80%;"></div>
 <script>
 
- var shipStyle = new ol.style.Style({
-        image: new ol.style.Icon(({
-            anchor: [0,0],
-            anchorXUnits: 'pixels',
-            anchorYUnits: 'pixels',
-            opacity: 0.75,
-            src: 'assets/leaflet/images/marker-icon.png'
-        })),
-        text: new ol.style.Text({
-            text: 'Z',
-            offsetY: -25,
-            fill: new ol.style.Fill({ color: '#fff' })
-        })
-    });
 
-var styles = [shipStyle];
-
-
-window.shipSource = new ol.source.Vector();
-
-window.shipImageSource = new ol.source.ImageVector({
-  source: window.shipSource,
-  style: function(feature,resolution) {
-    shipStyle.getText().setText((resolution < 5000 ? feature.imoNumber : ''));
-    return styles;
-  }
-});
-
-
-window.shipLayer = new ol.layer.Image({
-  source: window.shipImageSource,
-  style: function(feature,resolution) {
-    shipStyle.getText().setText(feature.imoNumber);
-    return styles;
-  }
-});
-
-var format = new ol.format.WKT();
-
-var f1 = format.readFeature('@simArea', {
-         dataProjection: 'EPSG:4326',
-         featureProjection: 'EPSG:3857'
-         });
-
-var polygonVectorSource = new ol.source.Vector({
-  features: [f1]
-});
-
-var areaLayer = new ol.layer.Vector({
-  source: polygonVectorSource,
-  style: new ol.style.Style({
-      fill: new ol.style.Fill({
-        color: 'rgba(255, 69, 0, 0.7)'
-      }),
-      stroke: new ol.style.Stroke({
-        color: 'rgba(255, 69, 0, 0.9)',
-        width: 1
-      })
-  })
-});
-
-var map = new ol.Map({
-  layers: [
-    new ol.layer.Tile({
-      source: new ol.source.OSM()
-    })
-  ],
-  target: 'map',
-  controls: ol.control.defaults({
-    attributionOptions: ({
-      collapsible: false
-    })
-  }),
-  view: new ol.View({
-    center: [0, 0],
-    center: [0, 0],
-    zoom: 2
-  })
-});
-
-window.map = map;
-window.map.ships = {};
-
-map.addLayer(window.shipLayer); map.addLayer(areaLayer);
-
-/*
-    var ol3d = new olcs.OLCesium({map: map});
-    var scene = ol3d.getCesiumScene();
-    var terrainProvider = new Cesium.CesiumTerrainProvider({
-      url : 'http://assets.agi.com/stk-terrain/world'
-    });
-    scene.terrainProvider = terrainProvider;
-    ol3d.setEnabled(true);
-*/
 
 function Ship(imo,marker) {
-    this.imo = imo;
-    this.marker = marker;
+        this.imo = imo;
+        this.marker = marker;
 }
-
-console.log('Loaded map!');
-
-window.map.ships = new Array();
 
 function init() {
-    testWebSocket();
+    testWebSocket('@wsUri');
+    loadMap('@simArea');
 }
-
-  function testWebSocket() {
-    wsUrl = '@wsUri';
-
-    console.log('Vou me loggar em ' + wsUrl);
-    websocket = new WebSocket(wsUrl);
-    websocket.onopen = function(evt) { onOpen(evt) };
-    websocket.onclose = function(evt) { onClose(evt) };
-    websocket.onmessage = function(evt) { onMessage(evt) };
-    websocket.onerror = function(evt) { onError(evt) };
-  }
-
-  function onOpen(evt) {
-    doSend("register");
-  }
-
-  function onClose(evt) {
-
-  }
-
-  function onMessage(evt) {
-    pos = $.parseJSON(evt.data);
-
-    if (window.map.ships[pos.imoNumber] === undefined) {
-        var iconFeature = new ol.Feature({
-            geometry: new ol.geom.Point(ol.proj.transform([pos.position.longitude,pos.position.latitude], 'EPSG:4326','EPSG:3857'))
-        });
-
-        iconFeature.imoNumber = pos.imoNumber;
-        var ship = new Ship(pos.imoNumber,iconFeature);
-        window.shipSource.addFeatures([iconFeature]);
-        window.map.ships[pos.imoNumber] = ship;
-    } else {
-        window.map.ships[pos.imoNumber].marker.getGeometry().setCoordinates(ol.proj.transform([pos.position.longitude,pos.position.latitude], 'EPSG:4326','EPSG:3857'));
-
-            /*
-        ship.marker.addTo(map);
-        ship.marker.bindPopup('<b>' + pos.imoNumber + '</b>');
-        */
-    }
-
-
-
-  }
-
-  function onError(evt){ }
-
-  function doSend(message) {
-    websocket.send(message);
-  }
 
   window.addEventListener("load", init, false);
 </script>
