@@ -2,7 +2,7 @@ package controllers
 
 import javax.inject.Inject
 
-import akka.actor.{ActorSystem, Props}
+import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.pattern.ask
 import akka.stream.Materializer
 import akka.util.Timeout
@@ -18,7 +18,11 @@ import play.api.data.Forms._
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import play.api.libs.streams.ActorFlow
-import play.libs.ws.WSClient
+
+import scala.util.{Failure, Success}
+
+import scala.concurrent.ExecutionContext.Implicits.global
+
 /**
   * Created by jferreira on 2/8/16.
   */
@@ -37,7 +41,7 @@ class SimulatorService @Inject() (implicit system:ActorSystem, materializer: Mat
   implicit val timeout = Timeout(2 seconds)
 
 
-  val simulation = system.actorOf(Props(new SimulationActor()))
+  val manager = system.actorOf(Props[ManagerActor])
 
   def validateArea(area:String) : Boolean = {
     val reader = new WKTReader
@@ -53,22 +57,25 @@ class SimulatorService @Inject() (implicit system:ActorSystem, materializer: Mat
     }
   }
 
-  def getRunningConfig() =  {
-    val runningConfig:Future[Configuration] = (simulation ? GetConfig()).mapTo[Configuration]
-    val c= Await.result(runningConfig,2 seconds)
-    c
+  def list() = Action.async {
+    val runningConfigs = manager ? GetConfig()
+    val simulations = runningConfigs.mapTo[List[SimulationStatus]]
+
+    simulations.map(sims =>
+      Ok(views.html.list(sims.toList))
+    )
   }
 
   def poll(imoNumber:String) = Action {
-    simulation ! OneTimePoll(imoNumber)
+    manager ! OneTimePoll(imoNumber)
     Ok("oneTimePoll:" + imoNumber)
   }
   def changeRate(imoNumber:String, rate:Int) = Action {
-    simulation ! ChangeRate(imoNumber,rate)
+    manager ! ChangeRate(imoNumber,rate)
     Ok("changeRate:" + imoNumber + "\nrate:"+rate)
   }
-  def stopSimulation() = Action {
-    simulation ! StopSimulation()
+  def stopSimulation(simulatorId:String) = Action {
+    manager ! StopSimulation(simulatorId)
     Ok("Simulation stopped")
   }
 
@@ -81,8 +88,8 @@ class SimulatorService @Inject() (implicit system:ActorSystem, materializer: Mat
       formWithErrors => {
         BadRequest(views.html.prepare(formWithErrors))
       },
-      conf => {
-        simulation ! conf
+      configuration => {
+        manager ! StartSimulation(configuration)
         Redirect(routes.SimulatorService.show())
       }
     )
@@ -94,25 +101,29 @@ class SimulatorService @Inject() (implicit system:ActorSystem, materializer: Mat
       configuration.fold(
         errors => BadRequest(Json.obj("error" -> JsError.toJson(errors))),
         configuration => {
-          simulation ! configuration
+          manager ! StartSimulation(configuration)
           Ok(Json.obj("status" -> ("ok"),  "configuration" -> configuration))
         }
       )
     }
   }
 
-  def show = Action { implicit request => {
+  def show = Action.async { implicit request => {
       val url:String = routes.SimulatorService.wsMap().absoluteURL()
       val uri = if (request.secure) url.replace("https://","wss://")
                 else url.replace("http://","ws://")
 
-      val runningConfig = getRunningConfig()
-      Ok(views.html.show(uri, runningConfig.wktArea))
+      val runningConfigs = manager ? GetConfig()
+      val simulations = runningConfigs.mapTo[List[SimulationStatus]]
+
+      simulations.map(sims =>
+        Ok(views.html.show(uri, sims.map(p => p.config.wktArea).toList))
+      )
     }
   }
 
   def wsMap = WebSocket.accept[String, String] { request =>
-    ActorFlow.actorRef(out => WebSocketActor.props(out,simulation))
+    ActorFlow.actorRef(out => WebSocketActor.props(out,manager))
   }
 
 }

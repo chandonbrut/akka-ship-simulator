@@ -16,7 +16,36 @@ function onMessage(evt) {
 }
 
 
-function loadMap(simArea) {
+function addArea(simArea) {
+
+    var format = new ol.format.WKT();
+    
+    var f1 = format.readFeature(simArea, {
+             dataProjection: 'EPSG:4326',
+             featureProjection: 'EPSG:3857'
+             });
+
+    var polygonVectorSource = new ol.source.Vector({
+      features: [f1]
+    });
+
+    var areaLayer = new ol.layer.Vector({
+      source: polygonVectorSource,
+      style: new ol.style.Style({
+          fill: new ol.style.Fill({
+            color: 'rgba(255, 69, 0, 0.7)'
+          }),
+          stroke: new ol.style.Stroke({
+            color: 'rgba(255, 69, 0, 0.9)',
+            width: 1
+          })
+      })
+    });
+
+    window.map.addLayer(areaLayer);
+}
+
+function loadMap() {
      var shipStyle = new ol.style.Style({
             image: new ol.style.Icon(({
                 anchor: [0,0],
@@ -54,30 +83,6 @@ function loadMap(simArea) {
       }
     });
 
-    var format = new ol.format.WKT();
-
-    var f1 = format.readFeature(simArea, {
-             dataProjection: 'EPSG:4326',
-             featureProjection: 'EPSG:3857'
-             });
-
-    var polygonVectorSource = new ol.source.Vector({
-      features: [f1]
-    });
-
-    var areaLayer = new ol.layer.Vector({
-      source: polygonVectorSource,
-      style: new ol.style.Style({
-          fill: new ol.style.Fill({
-            color: 'rgba(255, 69, 0, 0.7)'
-          }),
-          stroke: new ol.style.Stroke({
-            color: 'rgba(255, 69, 0, 0.9)',
-            width: 1
-          })
-      })
-    });
-
     var map = new ol.Map({
       layers: [
         new ol.layer.Tile({
@@ -100,5 +105,5 @@ function loadMap(simArea) {
     window.map = map;
     window.map.ships = {};
 
-    map.addLayer(window.shipLayer); map.addLayer(areaLayer);
+    map.addLayer(window.shipLayer);
 }

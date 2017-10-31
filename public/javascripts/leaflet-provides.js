@@ -16,8 +16,12 @@ function onMessage(evt) {
     }
 }
 
-function loadMap(simArea) {
+function addArea(simArea) {
+    var simAreaGeoJSON = Terraformer.WKT.parse(simArea);
+    L.geoJson(simAreaGeoJSON).addTo(window.map);
+}
 
+function loadMap() {
     function Position(lat,lon,timestamp) {
         this.lat = lat;
         this.lon = lon;
@@ -36,6 +40,5 @@ function loadMap(simArea) {
       minZoom: 2
     }).addTo(window.map);
 
-    var simAreaGeoJSON = Terraformer.WKT.parse(simArea);
-    L.geoJson(simAreaGeoJSON).addTo(map);
+
 }

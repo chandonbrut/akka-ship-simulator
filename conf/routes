@@ -6,7 +6,7 @@ GET /request/:imo/poll          controllers.SimulatorService.poll(imo:String)
 GET /request/:imo/:rate         controllers.SimulatorService.changeRate(imo:String, rate:Int)
 
 +nocsrf
-GET /stop                       controllers.SimulatorService.stopSimulation
+GET /stop                       controllers.SimulatorService.stopSimulation(simulatorId:String)
 
 +nocsrf
 GET /map                        controllers.SimulatorService.show
@@ -23,5 +23,8 @@ POST /configure                 controllers.SimulatorService.configure
 POST /configure.json            controllers.SimulatorService.configureJSON
 
 GET  /                      controllers.SimulatorService.show
+
+GET  /list                      controllers.SimulatorService.list
+
 
 GET     /assets/*file       controllers.Assets.versioned(path="/public", file: Asset)

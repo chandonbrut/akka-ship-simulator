@@ -1,4 +1,4 @@
-@(wsUri:String,simArea:String = "LINESTRING (-30 -10, -10 -30, -40 -40)")
+@(wsUri:String,simArea:List[String])
 @main("Ships") {
 
 <script>
@@ -23,12 +23,9 @@
 
 <script src='@routes.Assets.versioned("javascripts/websocket-shit.js")'></script>
 
-<body>
 <div id="map" style="height: 80%; width: 80%;"></div>
+
 <script>
-
-
-
 function Ship(imo,marker) {
         this.imo = imo;
         this.marker = marker;
@@ -36,7 +33,13 @@ function Ship(imo,marker) {
 
 function init() {
     testWebSocket('@wsUri');
-    loadMap('@simArea');
+
+    loadMap();
+
+    @for(area <- simArea) {
+        addArea('@area');
+    }
+
 }
 
   window.addEventListener("load", init, false);

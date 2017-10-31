@@ -1,8 +1,9 @@
 package br.com.jityk.shipsimulator.actor
 
+import akka.actor.ActorRef
 import play.api.libs.json.Json
 
-import scala.concurrent.duration.{FiniteDuration, Duration}
+import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.concurrent.duration._
 
 /**
@@ -11,15 +12,16 @@ import scala.concurrent.duration._
 
 case class JSONReport(imoNumber:String,timestamp:Long,lat:Double,lon:Double)
 case class Register()
-case class StartSimulation(duration:FiniteDuration)
+case class StartSimulation(configuration:Configuration)
 case class GetConfig()
-case class StopSimulation()
+case class StopSimulation(simulatorId:String)
 case class Point(latitude:Double, longitude:Double)
 case class ChangeRate(imoNumber:String, rate:Int)
 case class OneTimePoll(imoNumber:String)
 case class Tick()
 case class Report(imoNumber: String, position:Point, timestamp:Long)
 case class SpawnShips(numberOfShips:Int,cgCode:Int,area:String)
+case class SimulationStatus(simulatorId:String, config:Configuration)
 case class Configuration(
                       wktArea:String,
                       imoFirstDigit:Int,

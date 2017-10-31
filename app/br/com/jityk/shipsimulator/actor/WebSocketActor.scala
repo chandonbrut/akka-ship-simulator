@@ -7,10 +7,10 @@ import play.api.libs.json.Json
   * Created by jonasferreira on 2/23/16.
   */
 object WebSocketActor {
-  def props(out: ActorRef, sim:ActorRef) = Props(new WebSocketActor(out, sim))
+  def props(out: ActorRef, manager:ActorRef) = Props(new WebSocketActor(out, manager))
 }
 
-class WebSocketActor(out:ActorRef, sim:ActorRef) extends Actor {
+class WebSocketActor(out:ActorRef, manager:ActorRef) extends Actor {
 
 
   implicit val pointReads = Json.reads[Point]
@@ -23,7 +23,7 @@ class WebSocketActor(out:ActorRef, sim:ActorRef) extends Actor {
 
   def receive = {
     case "register" => {
-      sim ! Register()
+      manager ! Register()
     }
     case msg:Report => out ! Json.toJson(msg).toString()
   }
