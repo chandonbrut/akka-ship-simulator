@@ -11,8 +11,8 @@ herokuAppName in Compile := "akka-ship-simulator"
 
 libraryDependencies ++= Seq(
 	"com.vividsolutions" % "jts" % "1.13",
-  "com.typesafe.play" %% "play-ws" % "2.6.6",
-  "com.typesafe.play" %% "play-json" % "2.6.6",
+  "com.typesafe.play" %% "play-ws" % "2.6.7",
+  "com.typesafe.play" %% "play-json" % "2.6.7",
   "com.typesafe.play" %% "play-ahc-ws-standalone" % "1.0.1",
   "com.typesafe.play" %% "play-ws-standalone-json" % "1.0.1",
   "com.typesafe.play" %% "play-ws-standalone-xml" % "1.0.1"
