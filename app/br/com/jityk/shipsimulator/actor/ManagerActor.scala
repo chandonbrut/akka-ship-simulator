@@ -24,7 +24,7 @@ class ManagerActor extends Actor {
       println("Stopping simulation")
       val reference = simulations.filter(sim => sim._1 == msg.simulatorId)
       println(reference)
-      reference.head._2 ! StopSimulation
+      reference.head._2 ! msg
       simulations = simulations.filterNot(_._1 == msg.simulatorId)
     }
     case msg:Register => {
