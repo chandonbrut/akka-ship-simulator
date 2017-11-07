@@ -21,7 +21,9 @@ class ManagerActor extends Actor {
 
   override def receive = {
     case msg:StopSimulation => {
+      println("Stopping simulation")
       val reference = simulations.filter(sim => sim._1 == msg.simulatorId)
+      println(reference)
       reference.head._2 ! StopSimulation
       simulations = simulations.filterNot(_._1 == msg.simulatorId)
     }

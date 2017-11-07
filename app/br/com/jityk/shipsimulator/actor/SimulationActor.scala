@@ -64,6 +64,7 @@ class SimulationActor  extends Actor {
     case msg:OneTimePoll => manager ! msg
     case msg:ChangeRate => manager ! msg
     case msg:StopSimulation => {
+      println("Stopping simulation")
       stopRouters()
       forwarder ! PoisonPill
       self ! PoisonPill
