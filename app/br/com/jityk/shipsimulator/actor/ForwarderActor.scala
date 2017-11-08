@@ -25,10 +25,8 @@ class ForwarderActor extends Actor {
   def receive = {
     case msg:Report => sendToDC(msg)
     case msg:Configuration => {
-      /*
-        simFrontEndBaseUrl = msg.simFrontEndBaseUrl
-        configured = !((simFrontEndBaseUrl == null || simFrontEndBaseUrl.isEmpty))
-        */
+      simFrontEndBaseUrl = msg.simFrontEndBaseUrl
+      configured = !((simFrontEndBaseUrl == null || simFrontEndBaseUrl.isEmpty))
     }
   }
 
