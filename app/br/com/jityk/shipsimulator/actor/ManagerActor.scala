@@ -48,6 +48,9 @@ class ManagerActor extends Actor {
     case msg:ChangeRate => {
       simulations.map(sim => sim._2 ! msg)
     }
+    case msg:OneTimePoll => {
+      simulations.map(sim => sim._2 ! msg)
+    }
   }
 
 

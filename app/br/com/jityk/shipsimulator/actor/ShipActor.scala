@@ -27,10 +27,7 @@ class ShipActor(imoNumber:String, restrictedArea:String, speed:Double, manager:A
 
   override def receive = {
     case c:ChangeRate => changeRate(c.rate)
-    case p:OneTimePoll => {
-      val senderRef = sender
-      reportMyPosition(senderRef)
-    }
+    case p:OneTimePoll => reportMyPosition(manager)
     case t:Tick => tick
   }
 
