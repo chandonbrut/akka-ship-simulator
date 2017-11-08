@@ -45,6 +45,9 @@ class ManagerActor extends Actor {
       if (configs != Nil) sender ! configs
       else sender ! List()
     }
+    case msg:ChangeRate => {
+      simulations.map(sim => sim._2 ! msg)
+    }
   }
 
 

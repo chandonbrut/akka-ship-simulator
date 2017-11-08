@@ -12,9 +12,9 @@ import scala.util.Random
   * Created by jferreira on 2/8/16.
   */
 class ShipActor(imoNumber:String, restrictedArea:String, speed:Double, manager:ActorRef) extends Actor {
-
-  val myArea = new WKTReader().read(restrictedArea)
   val myRandomPositionGenerator = new RandomPointsBuilder()
+
+  val myArea = new WKTReader().read(createPath(restrictedArea))
   var going = true;
   var currentPoint:Int = 0;
   val geometryFactory = new GeometryFactory();
@@ -22,6 +22,8 @@ class ShipActor(imoNumber:String, restrictedArea:String, speed:Double, manager:A
   private var currentRate:Int = 15
   private var currentTick:Int = Random.nextInt(currentRate)
   private var currentPosition:Point = Point(myArea.getCoordinates()(0).y,myArea.getCoordinates()(0).x)
+
+
 
   override def receive = {
     case c:ChangeRate => changeRate(c.rate)
@@ -39,6 +41,20 @@ class ShipActor(imoNumber:String, restrictedArea:String, speed:Double, manager:A
   }
 
   def THRESHOLD = speed*2/(60d)
+
+  def createPath(area:String):String = {
+    myRandomPositionGenerator.setNumPoints(3)
+    val myArea = new WKTReader().read(area)
+    myArea match {
+      case p:Polygon => {
+        myRandomPositionGenerator.setExtent(myArea)
+        val gf = new GeometryFactory()
+        val geo = gf.createLineString(myRandomPositionGenerator.getGeometry.getCoordinates)
+        geo.toText
+      }
+      case l:LineString => myArea.toText
+    }
+  }
 
   def updatePositionFollowingLine = {
     val myPath = myArea.getCoordinates

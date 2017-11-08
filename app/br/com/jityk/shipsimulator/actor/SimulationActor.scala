@@ -20,7 +20,7 @@ class SimulationActor  extends Actor {
 
   var router:Router = Router(BroadcastRoutingLogic())
   val forwarder = context.actorOf(Props(new ForwarderActor()))
-  val myRandomPositionGenerator = new RandomPointsBuilder()
+
 
   private def stopRouters() = {
     router.route(PoisonPill,self)
@@ -33,14 +33,12 @@ class SimulationActor  extends Actor {
   }
 
   private def spawnShips(numberOfShips:Int,wktArea:String, cgCode:Int) = {
-    myRandomPositionGenerator.setNumPoints(3)
     val base = cgCode * 1000000
-    val children = (0 until numberOfShips).map(
+    val children = (1 until numberOfShips+1).map(
       n => {
         val imoNumber = (base + n).toString
-        val area = createPath(wktArea)
-        println("Spawning ship " + imoNumber + " @ " + area)
-        val child = context.actorOf(Props(new ShipActor(imoNumber, area, 1d, self)), imoNumber)
+        println("Spawning ship " + imoNumber)
+        val child = context.actorOf(Props(new ShipActor(imoNumber,wktArea, 1d, self)), imoNumber)
         context.watch(child)
         ActorRefRoutee(child)
       }
@@ -61,8 +59,6 @@ class SimulationActor  extends Actor {
       manager forward msg
     }
     case msg:GetConfig => sender ! config
-    case msg:OneTimePoll => manager ! msg
-    case msg:ChangeRate => manager ! msg
     case msg:StopSimulation => {
       println("Stopping simulation")
       stopRouters()
@@ -78,20 +74,5 @@ class SimulationActor  extends Actor {
     case msg:Terminated => println("Ship " + sender.path.name + " stopped.")
     case c:ChangeRate => context.actorSelection(c.imoNumber) ! c
     case m:OneTimePoll => context.actorSelection(m.imoNumber) ! m
-
   }
-
-  def createPath(area:String):String = {
-    val myArea = new WKTReader().read(area)
-    myArea match {
-      case p:Polygon => {
-        myRandomPositionGenerator.setExtent(myArea)
-        val gf = new GeometryFactory()
-        val geo = gf.createLineString(myRandomPositionGenerator.getGeometry.getCoordinates)
-        geo.toText
-      }
-      case l:LineString => myArea.toText
-    }
-  }
-
 }
