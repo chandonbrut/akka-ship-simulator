@@ -16,7 +16,6 @@ libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-ahc-ws-standalone" % "1.0.1",
   "com.typesafe.play" %% "play-ws-standalone-json" % "1.0.1",
   "com.typesafe.play" %% "play-ws-standalone-xml" % "1.0.1"
-//  "org.geotools" % "gt-main" % "17.1"
 )
 
 libraryDependencies += guice
