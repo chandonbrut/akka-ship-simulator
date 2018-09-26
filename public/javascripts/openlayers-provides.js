@@ -1,6 +1,8 @@
 function onMessage(evt) {
     pos = $.parseJSON(evt.data);
 
+//    console.log(pos);
+
     if (window.map.ships[pos.imoNumber] === undefined) {
         var iconFeature = new ol.Feature({
             geometry: new ol.geom.Point(ol.proj.transform([pos.position.longitude,pos.position.latitude], 'EPSG:4326','EPSG:3857'))
@@ -8,7 +10,7 @@ function onMessage(evt) {
 
         iconFeature.imoNumber = pos.imoNumber;
         var ship = new Ship(pos.imoNumber,iconFeature);
-        window.shipSource.addFeatures([iconFeature]);
+        window.shipLayer.getSource().addFeatures([iconFeature]);
         window.map.ships[pos.imoNumber] = ship;
     } else {
         window.map.ships[pos.imoNumber].marker.getGeometry().setCoordinates(ol.proj.transform([pos.position.longitude,pos.position.latitude], 'EPSG:4326','EPSG:3857'));
@@ -32,12 +34,12 @@ function addArea(simArea) {
     var areaLayer = new ol.layer.Vector({
       source: polygonVectorSource,
       style: new ol.style.Style({
-          fill: new ol.style.Fill({
-            color: 'rgba(255, 69, 0, 0.7)'
-          }),
+//          fill: new ol.style.Fill({
+//            color: 'rgba(255, 69, 0, 0.7)'
+//          }),
           stroke: new ol.style.Stroke({
             color: 'rgba(255, 69, 0, 0.9)',
-            width: 1
+            width: 2
           })
       })
     });
@@ -66,20 +68,20 @@ function loadMap() {
 
     window.shipSource = new ol.source.Vector();
 
-    window.shipImageSource = new ol.source.ImageVector({
+    window.shipImageSource = new ol.source.Vector({
       source: window.shipSource,
-      style: function(feature,resolution) {
+      style: function(feature) {
         shipStyle.getText().setText((resolution < 5000 ? feature.imoNumber : ''));
-        return styles;
+        return shipStyle;
       }
     });
 
 
-    window.shipLayer = new ol.layer.Image({
+    window.shipLayer = new ol.layer.Vector({
       source: window.shipImageSource,
-      style: function(feature,resolution) {
+      style: function(feature) {
         shipStyle.getText().setText(feature.imoNumber);
-        return styles;
+        return shipStyle;
       }
     });
 
