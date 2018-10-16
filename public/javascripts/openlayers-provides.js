@@ -1,4 +1,6 @@
 function onMessage(evt) {
+    console.log(evt.data);
+
     pos = $.parseJSON(evt.data);
 
 //    console.log(pos);
