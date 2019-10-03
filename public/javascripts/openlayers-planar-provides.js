@@ -50,7 +50,9 @@ function addArea(simArea) {
 
 function loadMap() {
 
+    console.info("Defining proj!");
     proj4.defs('ESRI:102016','+proj=aeqd +lat_0=90 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs');
+    ol.proj.proj4.register(proj4);
 
     var geojson_layer = new ol.layer.Vector({
         source: new ol.source.Vector({
@@ -81,7 +83,7 @@ function loadMap() {
 
     window.shipSource = new ol.source.Vector();
 
-    window.shipImageSource = new ol.source.ImageVector({
+    window.shipImageSource = new ol.source.Vector({
       source: window.shipSource,
       style: function(feature,resolution) {
         shipStyle.getText().setText((resolution < 5000 ? feature.imoNumber : ''));
@@ -90,7 +92,7 @@ function loadMap() {
     });
 
 
-    window.shipLayer = new ol.layer.Image({
+    window.shipLayer = new ol.layer.Vector({
       source: window.shipImageSource,
       style: function(feature,resolution) {
         shipStyle.getText().setText(feature.imoNumber);
@@ -110,7 +112,7 @@ function loadMap() {
       }),
       view: new ol.View({
         center: [0, 0],
-        center: [0, 0],
+//        center: [0, 0],
         zoom: 2,
         projection: 'ESRI:102016'
       })

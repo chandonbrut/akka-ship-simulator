@@ -6,7 +6,7 @@ scalaVersion := "2.12.7"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
-herokuAppName in Compile := "akka-ship-simulator"
+//herokuAppName in Compile := "akka-ship-simulator"
 
 
 libraryDependencies ++= Seq(
