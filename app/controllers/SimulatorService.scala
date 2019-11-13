@@ -38,10 +38,19 @@ class SimulatorService @Inject() (implicit system:ActorSystem, materializer: Mat
       "simFrontEndBaseUrl" -> text)(Configuration.apply)(Configuration.unapply)
   )
 
+  val oilConfigForm = Form(
+    mapping(
+      "wktArea" -> text.verifying("Area WKT invalida", area => validateArea(area)),
+      "wktOilShape" -> text.verifying("Area WKT invalida", area => validateArea(area)),
+      "oilId" -> text,
+      "tickUnit" -> shortNumber(min = 0, max = 4))(OilConfiguration.apply)(OilConfiguration.unapply)
+  )
+
+
   implicit val timeout = Timeout(2 seconds)
 
 
-  val manager = system.actorOf(Props[ManagerActor])
+  val manager = system.actorOf(Props[ManagerActor],"managerActor")
 
   def validateArea(area:String) : Boolean = {
     val reader = new WKTReader
@@ -83,6 +92,10 @@ class SimulatorService @Inject() (implicit system:ActorSystem, materializer: Mat
     Ok(views.html.prepare(configForm))
   }
 
+  def prepareOil = Action { implicit request =>
+    Ok(views.html.oilprepare(oilConfigForm))
+  }
+
   def configure = Action { implicit request =>
     configForm.bindFromRequest.fold(
       formWithErrors => {
@@ -90,6 +103,18 @@ class SimulatorService @Inject() (implicit system:ActorSystem, materializer: Mat
       },
       configuration => {
         manager ! StartSimulation(configuration)
+        Redirect(routes.SimulatorService.show())
+      }
+    )
+  }
+
+  def configureOil = Action { implicit request =>
+    oilConfigForm.bindFromRequest.fold(
+      formWithErrors => {
+        BadRequest(views.html.oilprepare(formWithErrors))
+      },
+      configuration => {
+        manager ! StartOilSimulation(configuration)
         Redirect(routes.SimulatorService.show())
       }
     )
@@ -117,7 +142,10 @@ class SimulatorService @Inject() (implicit system:ActorSystem, materializer: Mat
       val simulations = runningConfigs.mapTo[List[SimulationStatus]]
 
       simulations.map(sims =>
-        Ok(views.html.show(uri, sims.map(p => p.config.wktArea).toList))
+        Ok(views.html.show(uri, sims.map(p => p.config match {
+          case c:Configuration => c.wktArea
+          case c:OilConfiguration => c.wktArea
+        }).toList))
       )
     }
   }

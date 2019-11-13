@@ -1,0 +1,133 @@
+@import br.com.jityk.shipsimulator.actor.OilConfiguration
+@(configuration:Form[OilConfiguration])(implicit flash: Flash)
+@main("PrepareSimulation") {
+
+<link href='@routes.Assets.versioned("leaflet/leaflet.css")' rel="stylesheet">
+<script src='@routes.Assets.versioned("leaflet/leaflet.js")'></script>
+<link href='@routes.Assets.versioned("leaflet/leaflet.draw.css")' rel="stylesheet">
+<script src='@routes.Assets.versioned("leaflet/leaflet.draw.js")'></script>
+<script src='@routes.Assets.versioned("javascripts/terraformer.min.js")'></script>
+<script src='@routes.Assets.versioned("javascripts/terraformer-wkt-parser.min.js")'></script>
+
+
+@if(!flash.isEmpty) {
+<div class="alert alert-success center-block col-sm-6">
+    @for(msg <- flash.get("success")) {
+    <p>@msg</p>
+    }
+</div>
+}
+
+@if(configuration.errors.size > 0) {
+<div class="alert alert-danger center-block col-sm-6">
+    @for(error <- configuration.errors ) {
+    <p>@error.message</p>
+    }
+</div>
+}
+
+<div class="center-block col-sm-12">
+    @helper.form(action = routes.SimulatorService.configureOil, 'id -> "simulation_form", 'class -> "form-horizontal", 'role -> "form") {
+    <h2 class="form-heading center-block">Start Simulation</h2>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="form-group col-sm-11">
+                <label class="control-label col-sm-2" for="form_wktarea">WKT Area</label>
+                <div class="col-sm-10">
+                    <textarea id="form_wktarea" rows="5" placeholder="LINESTRING (30 40, 10 10, 20 40)" name="wktArea" value='@configuration("wktArea").value' class="form-control"></textarea>
+                </div>
+            </div>
+
+            <div class="form-group col-sm-11">
+                <label class="control-label col-sm-2" for="form_wktoilshape">WKT Oil Shape</label>
+                <div class="col-sm-10">
+                    <textarea id="form_wktoilshape" rows="5" placeholder="LINESTRING (30 40, 10 10, 20 40)" name="wktOilShape" value='@configuration("wktOilShape").value' class="form-control"></textarea>
+                </div>
+            </div>
+
+            <div class="form-group col-sm-11">
+                <label class="control-label col-sm-2" for="form_oilid">Oil Id</label>
+                <div class="col-sm-10">
+                    <input id="form_oilid" placeholder="10" name="oilId" value='@configuration("oilId").value' class="form-control"/>
+                </div>
+            </div>
+
+            <div class="form-group col-sm-11">
+                <label class="control-label col-sm-2" for="form_tickunit">Tick Unit</label>
+                <div class="col-sm-10">
+                    <select id="form_tickunit" name="tickUnit" value='@configuration("tickUnit").value' class="form-control">
+                        <option value="0">Milliseconds</option>
+                        <option value="1">Seconds</option>
+                        <option value="2">Minutes</option>
+                        <option value="3">Hours</option>
+                        <option value="4">Days</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group col-sm-11">
+                <button type="submit" id="btn_submit" class="btn btn-lg btn-default btn-block">Start Simulation</button>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div id="map" style="height: 45%; width: 80%;"></div>
+        </div>
+    </div>
+    }
+</div>
+
+
+<script>
+
+   function Ship(imo,marker) {
+        this.imo = imo;
+        this.marker = marker;
+    }
+
+function loadMap() {
+
+    function Position(lat,lon,timestamp) {
+        this.lat = lat;
+        this.lon = lon;
+        this.timestamp = timestamp;
+    }
+
+    var options = {
+        draw: {
+            polyline: false,
+            rectangle: false,
+            circle: false,
+            marker: false
+        }
+    };
+
+    var drawControl = new L.Control.Draw(options);
+
+    window.map = L.map('map', {
+        center: [-22, -43],
+        zoom: 6
+    });
+    window.map.addControl(drawControl);
+
+
+    map.on('draw:created', function (e) {
+        var type = e.layerType;
+        var layer = e.layer;
+
+        var geoJSON = layer.toGeoJSON().geometry;
+        var wkt = Terraformer.WKT.convert(geoJSON);
+        alert(wkt);
+    });
+
+    window.map.ships = new Array();
+    window.map.oil = new Array();
+
+    L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 20,
+      minZoom: 2
+    }).addTo(window.map);
+}
+
+  loadMap();
+</script>
+}

@@ -12,28 +12,8 @@
         </tr>
     </thead>
     <tbody>
-    @for(simulation <- simulations) {
-    <tr>
-        <td>
-            <a class="btn btn-sm btn-primary" href='@routes.SimulatorService.stopSimulation(simulation.simulatorId)'>Stop</a>
-        </td>
-        <td>
-            @simulation.config.numberOfShips
-        </td>
-        <td>
-            @simulation.config.wktArea
-        </td>
-        <td>
-            @simulation.config.tickUnit
-        </td>
-        <td>
-            @simulation.config.imoFirstDigit
-        </td>
-        <td>
-            @simulation.config.simFrontEndBaseUrl
-        </td>
-    </tr>
-    }
+
+
     </tbody>
 </table>
 }

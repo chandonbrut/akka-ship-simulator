@@ -41,7 +41,6 @@ class ForwarderActor extends Actor {
 
     if (configured) {
       val sendStr = simFrontEndBaseUrl
-
       wsClient.url(sendStr).withRequestTimeout(50 seconds).post(jsonObj).onComplete{
 
         case Success(value) => {
@@ -53,7 +52,7 @@ class ForwarderActor extends Actor {
         }
       }
     } else {
-      Logger.info(msg.toString)
+//      Logger.info(msg.toString)
     }
   }
 

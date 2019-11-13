@@ -12,14 +12,12 @@ import scala.util.Random
   * Created by jferreira on 2/8/16.
   */
 class ShipActor(imoNumber:String, restrictedArea:String, speed:Double, manager:ActorRef) extends Actor {
-  val myRandomPositionGenerator = new RandomPointsBuilder()
-
-  val myArea = new WKTReader().read(createPath(restrictedArea))
+  val myArea = GeoUtil.createPath(restrictedArea)
   var going = true;
   var currentPoint:Int = 0;
   val geometryFactory = new GeometryFactory();
 
-  private var currentRate:Int = 15
+  private var currentRate:Int = 50
   private var currentTick:Int = Random.nextInt(currentRate)
   private var currentPosition:Point = Point(myArea.getCoordinates()(0).y,myArea.getCoordinates()(0).x)
 
@@ -29,6 +27,10 @@ class ShipActor(imoNumber:String, restrictedArea:String, speed:Double, manager:A
     case c:ChangeRate => changeRate(c.rate)
     case p:OneTimePoll => reportMyPosition(manager)
     case t:Tick => tick
+    case g:GetPosition => {
+      println("ship got request")
+      sender() ! ShipPollReply(Report(imoNumber,currentPosition,scala.compat.Platform.currentTime))
+    }
   }
 
   def changeRate(newRate:Int): Unit = {
@@ -39,19 +41,6 @@ class ShipActor(imoNumber:String, restrictedArea:String, speed:Double, manager:A
 
   def THRESHOLD = speed*2/(60d)
 
-  def createPath(area:String):String = {
-    myRandomPositionGenerator.setNumPoints(3)
-    val myArea = new WKTReader().read(area)
-    myArea match {
-      case p:Polygon => {
-        myRandomPositionGenerator.setExtent(myArea)
-        val gf = new GeometryFactory()
-        val geo = gf.createLineString(myRandomPositionGenerator.getGeometry.getCoordinates)
-        geo.toText
-      }
-      case l:LineString => myArea.toText
-    }
-  }
 
   def updatePositionFollowingLine = {
     val myPath = myArea.getCoordinates
@@ -59,7 +48,6 @@ class ShipActor(imoNumber:String, restrictedArea:String, speed:Double, manager:A
     val rightNow = geometryFactory.createPoint(new Coordinate(currentPosition.longitude,currentPosition.latitude))
 
     if (going) {
-
       if (currentPoint == (myPath.length-1)) {
         going = false
         angle = Angle.angle(myPath(currentPoint),myPath(currentPoint-1))
@@ -95,17 +83,14 @@ class ShipActor(imoNumber:String, restrictedArea:String, speed:Double, manager:A
 
   def updatePosition = {
     myArea match {
-      case p:Polygon =>updatePositionUsingRandomArea
+      case p:Polygon => {
+        val p = GeoUtil.createRandomPointInside(myArea)
+        currentPosition = Point(p.getY,p.getX)
+      }
       case l:LineString =>updatePositionFollowingLine
     }
   }
 
-  def updatePositionUsingRandomArea = {
-    myRandomPositionGenerator.setExtent(myArea)
-    myRandomPositionGenerator.setNumPoints(1)
-    val newPosition = myRandomPositionGenerator.getGeometry
-    currentPosition = Point(newPosition.getCentroid.getY,newPosition.getCentroid.getX)
-  }
 
   def justLayThere = {
     val shouldPrint = false
@@ -121,5 +106,7 @@ class ShipActor(imoNumber:String, restrictedArea:String, speed:Double, manager:A
       case _ => justLayThere
     }
   }
+
+
 
 }
