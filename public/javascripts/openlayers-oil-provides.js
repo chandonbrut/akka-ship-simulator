@@ -3,8 +3,15 @@ function onMessage(evt) {
     pos = $.parseJSON(evt.data);
 
     if (pos.pollResult === true) {
-        console.log(pos);
+        if (window.closestShipImo !== undefined) {
+            window.map.ships[window.closestShipImo].marker.setStyle(shipStyle);
+        }
+
+        window.map.ships[pos.imoNumber].marker.setStyle(selectedShipStyle);
+        window.closestShipImo = pos.imoNumber;
+        return;
     }
+
 
     if (pos.oilId === undefined) {
 
@@ -43,6 +50,7 @@ function onMessage(evt) {
             window.map.oil[pos.oilId].marker.setGeometry(f1.getGeometry());
         }
 
+        websocket.send("poll");
 
     }
 }
@@ -87,13 +95,30 @@ function loadMap() {
                 src: 'assets/leaflet/images/marker-icon.png'
             })),
             text: new ol.style.Text({
-                text: 'Z',
                 offsetY: -25,
                 fill: new ol.style.Fill({ color: '#fff' })
             })
         });
 
-    var styles = [shipStyle];
+    var selectedShipStyle = new ol.style.Style({
+                    image: new ol.style.Icon(({
+                        anchor: [0,0],
+                        anchorXUnits: 'pixels',
+                        anchorYUnits: 'pixels',
+                        opacity: 0.75,
+                        src: 'assets/leaflet/images/marker-icon-red.png'
+                    })),
+                    text: new ol.style.Text({
+                        offsetY: -25,
+                        fill: new ol.style.Fill({ color: '#fff' })
+                    })
+                });
+
+
+    var styles = [shipStyle,selectedShipStyle];
+
+    window.shipStyle = shipStyle;
+    window.selectedShipStyle = selectedShipStyle;
 
 
     window.shipSource = new ol.source.Vector();
@@ -101,7 +126,6 @@ function loadMap() {
     window.shipImageSource = new ol.source.Vector({
       source: window.shipSource,
       style: function(feature) {
-        shipStyle.getText().setText((resolution < 5000 ? feature.imoNumber : ''));
         return shipStyle;
       }
     });
@@ -110,7 +134,6 @@ function loadMap() {
     window.shipLayer = new ol.layer.Vector({
       source: window.shipImageSource,
       style: function(feature) {
-        shipStyle.getText().setText(feature.imoNumber);
         return shipStyle;
       }
     });
@@ -166,7 +189,7 @@ function loadMap() {
     });
 
     window.map = map;
-    window.map.ships = {};
+    window.map.ships = new Map();
     window.map.oil = {};
 
     map.addLayer(window.shipLayer);

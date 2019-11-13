@@ -18,7 +18,7 @@ class OilActor(manager:ActorRef,oilId:String,restrictedArea:String, initialShape
   private var currentTick:Int = Random.nextInt(currentRate)
   private var currentPosition:Point = Point(myArea.getCoordinates()(0).y,myArea.getCoordinates()(0).x)
 
-  private val SPEED = 5
+  private val SPEED = 2
   def THRESHOLD = SPEED*2/(60d)
 
   override def receive: Receive = {
