@@ -10,7 +10,7 @@ import akka.routing.{BroadcastRoutingLogic, Router}
   * Created by jferreira on 2/8/16.
   */
 
-class ManagerActor extends Actor {
+class ManagerActor(dbWriterActor:ActorRef) extends Actor {
 
   var websockets:Router = Router(BroadcastRoutingLogic())
   var simulations:List[(String,ActorRef,Any)] = List()
@@ -19,16 +19,15 @@ class ManagerActor extends Actor {
     case msg:StopSimulation => {
       println("Stopping simulation")
       val reference = simulations.filter(sim => sim._1 == msg.simulatorId)
-      println(reference)
       reference.head._2 ! msg
       simulations = simulations.filterNot(_._1 == msg.simulatorId)
     }
     case msg:Register => {
-      println("Registrando cliente WebSocket")
       websockets = websockets.addRoutee(sender)
     }
     case r:Report => {
       websockets.route(r,sender)
+      dbWriterActor ! r
     }
     case r:OilReport => {
       websockets.route(r,sender)

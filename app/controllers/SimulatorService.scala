@@ -27,7 +27,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * Created by jferreira on 2/8/16.
   */
 
-class SimulatorService @Inject() (implicit system:ActorSystem, materializer: Materializer, val controllerComponents: ControllerComponents) extends BaseController {
+class SimulatorService @Inject() (implicit system:ActorSystem, materializer: Materializer, dbWriter:DBWriter, val controllerComponents: ControllerComponents) extends BaseController {
 
   val configForm = Form(
     mapping(
@@ -38,19 +38,12 @@ class SimulatorService @Inject() (implicit system:ActorSystem, materializer: Mat
       "simFrontEndBaseUrl" -> text)(Configuration.apply)(Configuration.unapply)
   )
 
-  val oilConfigForm = Form(
-    mapping(
-      "wktArea" -> text.verifying("Area WKT invalida", area => validateArea(area)),
-      "wktOilShape" -> text.verifying("Area WKT invalida", area => validateArea(area)),
-      "oilId" -> text,
-      "tickUnit" -> shortNumber(min = 0, max = 4))(OilConfiguration.apply)(OilConfiguration.unapply)
-  )
-
-
   implicit val timeout = Timeout(2 seconds)
 
 
-  val manager = system.actorOf(Props[ManagerActor],"managerActor")
+
+  val dbWriterActor = system.actorOf(Props(new DBWriterActor(dbWriter)))
+  val manager = system.actorOf(Props(new ManagerActor(dbWriterActor)))
 
   def validateArea(area:String) : Boolean = {
     val reader = new WKTReader
@@ -92,10 +85,6 @@ class SimulatorService @Inject() (implicit system:ActorSystem, materializer: Mat
     Ok(views.html.prepare(configForm))
   }
 
-  def prepareOil = Action { implicit request =>
-    Ok(views.html.oilprepare(oilConfigForm))
-  }
-
   def configure = Action { implicit request =>
     configForm.bindFromRequest.fold(
       formWithErrors => {
@@ -103,18 +92,6 @@ class SimulatorService @Inject() (implicit system:ActorSystem, materializer: Mat
       },
       configuration => {
         manager ! StartSimulation(configuration)
-        Redirect(routes.SimulatorService.show())
-      }
-    )
-  }
-
-  def configureOil = Action { implicit request =>
-    oilConfigForm.bindFromRequest.fold(
-      formWithErrors => {
-        BadRequest(views.html.oilprepare(formWithErrors))
-      },
-      configuration => {
-        manager ! StartOilSimulation(configuration)
         Redirect(routes.SimulatorService.show())
       }
     )
@@ -142,10 +119,7 @@ class SimulatorService @Inject() (implicit system:ActorSystem, materializer: Mat
       val simulations = runningConfigs.mapTo[List[SimulationStatus]]
 
       simulations.map(sims =>
-        Ok(views.html.show(uri, sims.map(p => p.config match {
-          case c:Configuration => c.wktArea
-          case c:OilConfiguration => c.wktArea
-        }).toList))
+        Ok(views.html.show(uri, sims.map(p => p.config.wktArea).toList))
       )
     }
   }
