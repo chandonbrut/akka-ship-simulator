@@ -2,6 +2,9 @@ package br.com.jityk.shipsimulator.actor
 
 import akka.actor.{Actor, ActorRef, PoisonPill, Props, Terminated}
 import akka.routing.{ActorRefRoutee, BroadcastRoutingLogic, Router}
+import com.vividsolutions.jts.geom.{GeometryFactory, LineString, Polygon}
+import com.vividsolutions.jts.io.WKTReader
+import com.vividsolutions.jts.shape.random.RandomPointsBuilder
 import scala.concurrent.duration._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -10,7 +13,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
   * Created by jferreira on 2/9/16.
   */
-class SimulationActor extends Actor {
+class SimulationActor  extends Actor {
 
   private var manager:ActorRef = null
   private var config:Configuration = Configuration(null,-1,-1,-1,null)

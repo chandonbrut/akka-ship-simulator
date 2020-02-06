@@ -19,11 +19,6 @@ GET /configure                 controllers.SimulatorService.prepare
 +nocsrf
 POST /configure                 controllers.SimulatorService.configure
 
-+nocsrf
-GET /configure/oil                 controllers.SimulatorService.prepareOil
-
-+nocsrf
-POST /configure/oil                 controllers.SimulatorService.configureOil
 
 +nocsrf
 POST /configure.json            controllers.SimulatorService.configureJSON

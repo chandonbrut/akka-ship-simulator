@@ -13,7 +13,7 @@ import akka.routing.{BroadcastRoutingLogic, Router}
 class ManagerActor(dbWriterActor:ActorRef) extends Actor {
 
   var websockets:Router = Router(BroadcastRoutingLogic())
-  var simulations:List[(String,ActorRef,Any)] = List()
+  var simulations:List[(String,ActorRef,Configuration)] = List()
 
   override def receive = {
     case msg:StopSimulation => {
@@ -34,11 +34,6 @@ class ManagerActor(dbWriterActor:ActorRef) extends Actor {
     }
 
     case msg:StartSimulation => {
-      val simulation = context.actorOf(Props[SimulationActor])
-      simulation ! msg.configuration
-      simulations = (UUID.randomUUID().toString,simulation,msg.configuration) :: simulations
-    }
-    case msg:StartOilSimulation => {
       val simulation = context.actorOf(Props[SimulationActor])
       simulation ! msg.configuration
       simulations = (UUID.randomUUID().toString,simulation,msg.configuration) :: simulations

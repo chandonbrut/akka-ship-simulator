@@ -25,7 +25,7 @@ case class Tick()
 case class OilReport(oilId:String,shape:String,timestamp:Long)
 case class Report(imoNumber: String, position:Point, timestamp:Long)
 case class SpawnShips(numberOfShips:Int,cgCode:Int,area:String)
-case class SimulationStatus(simulatorId:String, config:Any)
+case class SimulationStatus(simulatorId:String, config:Configuration)
 case class Configuration(
                       wktArea:String,
                       imoFirstDigit:Int,
